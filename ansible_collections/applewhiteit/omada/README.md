@@ -42,14 +42,30 @@ variable file; do not hard-code credentials.
 
 ## Modules
 
-| Module | Purpose |
-|---|---|
-| `omada_site_info` | List sites visible to the account |
-| `omada_device_info` | List/describe devices (gateway, switches, APs) on a site |
+| Module | Type | Purpose |
+|---|---|---|
+| `omada_site_info` | info | List sites visible to the account |
+| `omada_device_info` | info | List/describe devices (gateway, switches, APs) on a site |
+| `omada_firmware_info` | info | Firmware version and upgrade-available status per device |
+| `omada_switch_port` | config | Configure a switch port: name, profile, PoE, duplex, link speed, 802.1x, LLDP-MED, loopback detection, spanning tree, port isolation. Idempotent, check-mode aware, merges onto existing overrides rather than replacing them wholesale. |
+| `omada_device` | config | Device-level LED setting. Idempotent, check-mode aware. |
 
-More modules land as the upstream library's coverage is verified against a
-live controller (see the project's Phase 2 capability matrix for what's
-planned next).
+Not yet implemented, and why:
+
+- **VLANs/networks, SSIDs/WLANs, guest networks, wireless security** — not
+  exposed by `tplink-omada-client` today (VLANs/networks) or unconfirmed
+  against the official API (the rest). See
+  [the capability matrix](../../../docs/phase2-capability-matrix.md).
+- **Port profiles as a standalone config module** — the upstream client only
+  supports reading existing profiles and applying one to a port (the latter
+  is covered by `omada_switch_port`'s `profile_id` option); there's no
+  create/edit/delete API to wrap.
+- **Device naming, per-device reboot** — not exposed by the upstream client.
+  (Client renaming *is* supported and will get its own module later; device
+  reboot in this library only reboots the controller itself, a different and
+  higher-risk scope than a per-device module.)
+
+More modules land as upstream coverage is verified against a live controller.
 
 ## License
 

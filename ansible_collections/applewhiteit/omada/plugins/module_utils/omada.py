@@ -19,8 +19,14 @@ from ansible.module_utils.basic import env_fallback
 
 OMADA_CLIENT_IMPORT_ERROR = None
 try:
+    from tplink_omada_client.definitions import Eth802Dot1X, LedSetting, LinkDuplex, LinkSpeed, PoEMode
     from tplink_omada_client.exceptions import OmadaClientException
     from tplink_omada_client.omadaclient import OmadaClient
+    from tplink_omada_client.omadasiteclient import (
+        AccessPointPortSettings,
+        GatewayPortSettings,
+        SwitchPortOverrides,
+    )
 
     HAS_OMADA_CLIENT = True
 except ImportError:
@@ -120,6 +126,56 @@ def run_omada_task(module, coro_factory):
         return await coro_factory(site_client)
 
     return _run_with_client(module, _with_site_client)
+
+
+def enum_display(value):
+    """Render an IntEnum from tplink_omada_client as a lowercase string for module output."""
+    if value is None:
+        return None
+    name = getattr(value, "name", None)
+    return name.lower() if name else value
+
+
+if HAS_OMADA_CLIENT:
+    DOT1X_MODE_CHOICES = {
+        "force_unauthorized": Eth802Dot1X.FORCE_UNAUTHORIZED,
+        "force_authorized": Eth802Dot1X.FORCE_AUTHORIZED,
+        "auto": Eth802Dot1X.AUTO,
+    }
+    DUPLEX_CHOICES = {
+        "auto": LinkDuplex.AUTO,
+        "half": LinkDuplex.HALF,
+        "full": LinkDuplex.FULL,
+    }
+    LINK_SPEED_CHOICES = {
+        "auto": LinkSpeed.SPEED_AUTO,
+        "10mbps": LinkSpeed.SPEED_10_MBPS,
+        "100mbps": LinkSpeed.SPEED_100_MBPS,
+        "1gbps": LinkSpeed.SPEED_1_GBPS,
+        "2.5gbps": LinkSpeed.SPEED_2_5_GBPS,
+        "10gbps": LinkSpeed.SPEED_10_GBPS,
+    }
+    LED_SETTING_CHOICES = {
+        "off": LedSetting.OFF,
+        "on": LedSetting.ON,
+        "site_settings": LedSetting.SITE_SETTINGS,
+    }
+else:
+    # Argument specs still need the choice lists at import time even when the
+    # optional dependency is missing (e.g. during `ansible-doc` collection
+    # scanning) - check_omada_client_dependency() fails the module before any
+    # of these values would actually be used against a real enum.
+    DOT1X_MODE_CHOICES = {"force_unauthorized": None, "force_authorized": None, "auto": None}
+    DUPLEX_CHOICES = {"auto": None, "half": None, "full": None}
+    LINK_SPEED_CHOICES = {
+        "auto": None,
+        "10mbps": None,
+        "100mbps": None,
+        "1gbps": None,
+        "2.5gbps": None,
+        "10gbps": None,
+    }
+    LED_SETTING_CHOICES = {"off": None, "on": None, "site_settings": None}
 
 
 def to_native_message(exc):
