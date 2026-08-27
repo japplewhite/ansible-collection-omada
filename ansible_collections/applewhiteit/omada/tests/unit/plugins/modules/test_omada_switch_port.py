@@ -16,7 +16,7 @@ class FakePortDetails:
     profile_id: str = "profile-default"
     profile_name: str = "All"
     has_profile_override: bool = False
-    is_disabled: bool = False
+    native_network_id: str = "net-lan-default"
     poe_mode: PoEMode = PoEMode.DISABLED
     duplex: LinkDuplex = LinkDuplex.AUTO
     link_speed: LinkSpeed = LinkSpeed.SPEED_AUTO
@@ -27,48 +27,41 @@ class FakePortDetails:
     port_isolation_enabled: bool = False
 
 
-@dataclass
-class FakeOverrides:
-    enable_poe: bool = True
-    dot1x_mode: Eth802Dot1X = Eth802Dot1X.FORCE_AUTHORIZED
-    duplex: LinkDuplex = LinkDuplex.AUTO
-    link_speed: LinkSpeed = LinkSpeed.SPEED_AUTO
-    lldp_med_enable: bool = True
-    loopback_detect: bool = True
-    spanning_tree_enable: bool = False
-    port_isolation: bool = False
-
-
 class FakeSiteClient:
     def __init__(self, current):
         self.current = current
-        self.overrides = FakeOverrides()
         self.update_calls = []
 
     async def get_switch_port(self, mac, port):
         return self.current
 
-    async def get_switch_port_overrides(self, mac, port):
-        return self.overrides
-
-    async def update_switch_port(self, mac, port, new_name=None, profile_id=None, overrides=None):
-        self.update_calls.append(
-            {"mac": mac, "port": port, "new_name": new_name, "profile_id": profile_id, "overrides": overrides}
-        )
+    async def update_switch_port(self, mac, port, settings):
+        self.update_calls.append({"mac": mac, "port": port, "settings": settings})
         after = replace(self.current)
-        if new_name is not None:
-            after.name = new_name
-        if profile_id is not None:
-            after.profile_id = profile_id
-        if overrides is not None:
-            after.poe_mode = PoEMode.ENABLED if overrides.enable_poe else PoEMode.DISABLED
-            after.duplex = overrides.duplex
-            after.link_speed = overrides.link_speed
-            after.eth_802_1x_control = overrides.dot1x_mode
-            after.lldp_med_enabled = overrides.lldp_med_enable
-            after.loopback_detect_enabled = overrides.loopback_detect
-            after.spanning_tree_enabled = overrides.spanning_tree_enable
-            after.port_isolation_enabled = overrides.port_isolation
+        if settings.name is not None:
+            after.name = settings.name
+        if settings.profile_id is not None:
+            after.profile_id = settings.profile_id
+        if settings.native_network_id is not None:
+            after.native_network_id = settings.native_network_id
+        if settings.duplex is not None:
+            after.duplex = settings.duplex
+        if settings.link_speed is not None:
+            after.link_speed = settings.link_speed
+        overrides = settings.profile_overrides
+        if settings.profile_override_enabled and overrides is not None:
+            if overrides.enable_poe is not None:
+                after.poe_mode = PoEMode.ENABLED if overrides.enable_poe else PoEMode.DISABLED
+            if overrides.dot1x_mode is not None:
+                after.eth_802_1x_control = overrides.dot1x_mode
+            if overrides.lldp_med_enable is not None:
+                after.lldp_med_enabled = overrides.lldp_med_enable
+            if overrides.loopback_detect is not None:
+                after.loopback_detect_enabled = overrides.loopback_detect
+            if overrides.spanning_tree_enable is not None:
+                after.spanning_tree_enabled = overrides.spanning_tree_enable
+            if overrides.port_isolation is not None:
+                after.port_isolation_enabled = overrides.port_isolation
         return after
 
 
@@ -115,33 +108,41 @@ def test_name_only_change_does_not_touch_overrides(monkeypatch):
 
     assert result["changed"] is True
     assert len(site_client.update_calls) == 1
-    call = site_client.update_calls[0]
-    assert call["new_name"] == "Camera 1 - front porch"
-    assert call["profile_id"] is None
-    assert call["overrides"] is None  # no override fields requested -> untouched
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.name == "Camera 1 - front porch"
+    assert settings.profile_id is None
+    assert settings.native_network_id is None
+    assert settings.profile_override_enabled is None  # no override fields requested -> untouched
+    assert settings.profile_overrides is None
     assert result["after"]["name"] == "Camera 1 - front porch"
 
 
-def test_enable_poe_merges_onto_current_overrides_not_defaults(monkeypatch):
+def test_native_network_id_assigns_vlan(monkeypatch):
+    current = FakePortDetails(port=1, name="Camera 1", native_network_id="net-lan-default")
+    site_client = FakeSiteClient(current)
+    result = _run(monkeypatch, site_client, _base_args(native_network_id="net-surveillance"))
+
+    assert result["changed"] is True
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.native_network_id == "net-surveillance"
+    assert result["after"]["native_network_id"] == "net-surveillance"
+
+
+def test_enable_poe_sets_profile_override_enabled_and_only_that_field(monkeypatch):
     current = FakePortDetails(port=1, name="Port1", poe_mode=PoEMode.DISABLED)
     site_client = FakeSiteClient(current)
-    # Simulate a port whose existing overrides differ from the dataclass defaults,
-    # to prove the module merges onto *current* overrides, not blank ones.
-    site_client.overrides = FakeOverrides(
-        enable_poe=False,
-        dot1x_mode=Eth802Dot1X.FORCE_UNAUTHORIZED,
-        spanning_tree_enable=True,
-    )
 
     result = _run(monkeypatch, site_client, _base_args(enable_poe=True))
 
     assert result["changed"] is True
-    call = site_client.update_calls[0]
-    overrides = call["overrides"]
-    assert overrides.enable_poe is True  # the requested change
-    # everything else preserved from the *current* overrides, not the class defaults
-    assert overrides.dot1x_mode == Eth802Dot1X.FORCE_UNAUTHORIZED
-    assert overrides.spanning_tree_enable is True
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.profile_override_enabled is True
+    overrides = settings.profile_overrides
+    assert overrides.enable_poe is True
+    # everything else left None -> library's own semantics leave them unchanged,
+    # this module must not fabricate values for fields the user didn't ask about
+    assert overrides.dot1x_mode is None
+    assert overrides.spanning_tree_enable is None
 
 
 def test_check_mode_reports_change_without_calling_update(monkeypatch):
@@ -167,8 +168,8 @@ def test_profile_and_override_change_together(monkeypatch):
     )
 
     assert result["changed"] is True
-    call = site_client.update_calls[0]
-    assert call["profile_id"] == "profile-ap"
-    assert call["overrides"].enable_poe is True
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.profile_id == "profile-ap"
+    assert settings.profile_overrides.enable_poe is True
     assert result["after"]["profile_id"] == "profile-ap"
     assert result["after"]["poe_mode"] == "enabled"

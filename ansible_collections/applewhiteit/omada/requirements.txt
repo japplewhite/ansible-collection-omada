@@ -1,1 +1,8 @@
-tplink-omada-client>=1.4.4,<2
+# Temporarily pinned to our private working fork instead of the PyPI release.
+# We need LAN network (VLAN) support that isn't in any released version of
+# tplink-omada-client yet. The fork tracks upstream master plus two merged-in
+# open upstream PRs (#88 DHCP reservations, #90 AP radio settings) and our
+# own network-read addition on top. See ../../../README.md "Delivery
+# priority" section for the plan to reconcile this back to a released
+# upstream dependency once possible.
+git+https://github.com/japplewhite/tplink-omada-api-fork.git@feature/vlan-network-support#egg=tplink-omada-client

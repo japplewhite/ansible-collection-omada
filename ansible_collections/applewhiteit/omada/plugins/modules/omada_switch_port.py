@@ -12,16 +12,17 @@ module: omada_switch_port
 short_description: Configure an individual switch port on an Omada switch
 version_added: "1.0.0"
 description:
-  - Configure name, port profile, and per-port overrides (PoE, duplex, link speed,
-    802.1x, LLDP-MED, loopback detection, spanning tree, port isolation) on a
-    single switch port.
-  - Idempotent - only options you set are compared and changed; unset options
-    are left exactly as they currently are.
-  - >-
-    The underlying API replaces the entire override object on write, so this
-    module always reads the port's current overrides first and merges your
-    requested changes on top before writing, rather than clobbering unrelated
-    override settings.
+  - Configure name, port profile, native VLAN/network, and per-port profile
+    overrides (PoE, duplex, link speed, 802.1x, LLDP-MED, loopback
+    detection, spanning tree, port isolation) on a single switch port.
+  - Idempotent - only options you set are compared and changed; unset
+    options are left exactly as they currently are. This relies on the
+    underlying tplink-omada-client library's own None-means-unchanged
+    semantics for profile overrides, not a hand-rolled merge.
+  - Requires the O(native_network_id) module to have been created first
+    (see M(applewhiteit.omada.omada_network_info) to look up network IDs) -
+    this module only assigns an existing network to a port, it does not
+    create networks.
 options:
   controller_url:
     description: Base URL of the Omada controller, e.g. C(https://omada.example.com:8043).
@@ -57,6 +58,10 @@ options:
     required: false
   profile_id:
     description: ID of an existing port profile to apply to this port.
+    type: str
+    required: false
+  native_network_id:
+    description: ID of the network (VLAN) to set as this port's native/untagged network.
     type: str
     required: false
   enable_poe:
@@ -101,7 +106,7 @@ requirements:
 """
 
 EXAMPLES = r"""
-- name: Rename a port and enable PoE, leaving everything else untouched
+- name: Put a camera port on the surveillance VLAN and enable PoE
   applewhiteit.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
@@ -110,6 +115,7 @@ EXAMPLES = r"""
     mac: "AA-BB-CC-00-00-01"
     port: 1
     name: "Camera 1 - front porch"
+    native_network_id: "{{ surveillance_network_id }}"
     enable_poe: true
 
 - name: Apply a port profile
@@ -151,17 +157,20 @@ from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
     DUPLEX_CHOICES,
     LINK_SPEED_CHOICES,
     PoEMode,
-    SwitchPortOverrides,
+    PortProfileOverrides,
+    SwitchPortSettings,
     enum_display,
     omada_argument_spec,
     run_omada_task,
 )
 
+# (Ansible param name, current-port attribute name) - both plain-value fields
+# (name/profile_id/native_network_id) and PortProfileOverrides fields are
+# listed here; OVERRIDE_PARAM_NAMES below distinguishes which go into the
+# nested profile_overrides object.
 OVERRIDE_PARAM_NAMES = (
     "enable_poe",
     "dot1x_mode",
-    "duplex",
-    "link_speed",
     "lldp_med_enable",
     "loopback_detect",
     "spanning_tree_enable",
@@ -176,10 +185,10 @@ def _serialize(port_details):
         "profile_id": port_details.profile_id,
         "profile_name": port_details.profile_name,
         "has_profile_override": port_details.has_profile_override,
-        "is_disabled": port_details.is_disabled,
-        "poe_mode": enum_display(port_details.poe_mode),
+        "native_network_id": port_details.native_network_id,
         "duplex": enum_display(port_details.duplex),
         "link_speed": enum_display(port_details.link_speed),
+        "poe_mode": enum_display(port_details.poe_mode),
         "dot1x_mode": enum_display(port_details.eth_802_1x_control),
         "lldp_med_enable": port_details.lldp_med_enabled,
         "loopback_detect": port_details.loopback_detect_enabled,
@@ -189,14 +198,8 @@ def _serialize(port_details):
 
 
 def _desired_override_value(param_name, raw_value):
-    if param_name == "enable_poe":
-        return raw_value  # stays a plain bool, compared against poe_mode separately
     if param_name == "dot1x_mode":
         return DOT1X_MODE_CHOICES[raw_value]
-    if param_name == "duplex":
-        return DUPLEX_CHOICES[raw_value]
-    if param_name == "link_speed":
-        return LINK_SPEED_CHOICES[raw_value]
     return raw_value  # remaining override fields are plain bools, no enum mapping needed
 
 
@@ -205,10 +208,6 @@ def _current_value_for_comparison(param_name, current):
         return current.poe_mode == PoEMode.ENABLED
     if param_name == "dot1x_mode":
         return current.eth_802_1x_control
-    if param_name == "duplex":
-        return current.duplex
-    if param_name == "link_speed":
-        return current.link_speed
     if param_name == "lldp_med_enable":
         return current.lldp_med_enabled
     if param_name == "loopback_detect":
@@ -227,6 +226,7 @@ def main():
         port=dict(type="int", required=True),
         name=dict(type="str", required=False),
         profile_id=dict(type="str", required=False),
+        native_network_id=dict(type="str", required=False),
         enable_poe=dict(type="bool", required=False),
         dot1x_mode=dict(type="str", required=False, choices=list(DOT1X_MODE_CHOICES)),
         duplex=dict(type="str", required=False, choices=list(DUPLEX_CHOICES)),
@@ -245,11 +245,23 @@ def main():
         current = await site_client.get_switch_port(mac, port)
         before = _serialize(current)
 
-        new_name = module.params["name"]
-        name_changed = new_name is not None and new_name != current.name
+        top_level_changes = {}
+        for field, current_value in (
+            ("name", current.name),
+            ("profile_id", current.profile_id),
+            ("native_network_id", current.native_network_id),
+        ):
+            desired = module.params[field]
+            if desired is not None and desired != current_value:
+                top_level_changes[field] = desired
 
-        new_profile_id = module.params["profile_id"]
-        profile_changed = new_profile_id is not None and new_profile_id != current.profile_id
+        duplex_desired = module.params["duplex"]
+        if duplex_desired is not None and DUPLEX_CHOICES[duplex_desired] != current.duplex:
+            top_level_changes["duplex"] = DUPLEX_CHOICES[duplex_desired]
+
+        link_speed_desired = module.params["link_speed"]
+        if link_speed_desired is not None and LINK_SPEED_CHOICES[link_speed_desired] != current.link_speed:
+            top_level_changes["link_speed"] = LINK_SPEED_CHOICES[link_speed_desired]
 
         override_changes = {}
         for param_name in OVERRIDE_PARAM_NAMES:
@@ -260,34 +272,17 @@ def main():
             if _current_value_for_comparison(param_name, current) != desired:
                 override_changes[param_name] = desired
 
-        changed = name_changed or profile_changed or bool(override_changes)
+        changed = bool(top_level_changes) or bool(override_changes)
 
         if not changed or module.check_mode:
             return {"changed": changed, "before": before, "after": before}
 
-        overrides = None
+        settings = SwitchPortSettings(**top_level_changes)
         if override_changes:
-            base = await site_client.get_switch_port_overrides(mac, port)
-            overrides = SwitchPortOverrides(
-                enable_poe=override_changes.get("enable_poe", base.enable_poe),
-                dot1x_mode=override_changes.get("dot1x_mode", base.dot1x_mode),
-                duplex=override_changes.get("duplex", base.duplex),
-                link_speed=override_changes.get("link_speed", base.link_speed),
-                lldp_med_enable=override_changes.get("lldp_med_enable", base.lldp_med_enable),
-                loopback_detect=override_changes.get("loopback_detect", base.loopback_detect),
-                spanning_tree_enable=override_changes.get(
-                    "spanning_tree_enable", base.spanning_tree_enable
-                ),
-                port_isolation=override_changes.get("port_isolation", base.port_isolation),
-            )
+            settings.profile_override_enabled = True
+            settings.profile_overrides = PortProfileOverrides(**override_changes)
 
-        updated = await site_client.update_switch_port(
-            mac,
-            port,
-            new_name=new_name if name_changed else None,
-            profile_id=new_profile_id if profile_changed else None,
-            overrides=overrides,
-        )
+        updated = await site_client.update_switch_port(mac, port, settings)
         return {"changed": True, "before": before, "after": _serialize(updated)}
 
     result = run_omada_task(module, _apply)

@@ -12,26 +12,47 @@ Phase 1 (upstream ecosystem research) in progress. See `docs/` as phases land.
 ## Delivery priority (important — read before assuming this project gates anything)
 
 The customer network this project validates against has a real, near-term
-delivery deadline. **This automation project is never on that critical
-path.** The network gets configured directly through the Omada Controller's
-own web UI, on whatever timeline the hardware and customer need — including
-anything this collection doesn't cover yet (VLANs/networks, WLANs). The
-Controller UI has no such gap; only the Python library this project depends
-on does.
+delivery deadline. **Superseded 2026-08-27:** the earlier plan here was to
+configure the network by hand through the Omada Controller UI and treat this
+collection as a parallel, non-blocking track. That's no longer the plan —
+Jeff wants the actual network configured *through this collection's code*,
+not by hand. Do not suggest manual UI configuration as the delivery path.
 
-This collection is a parallel, lower-priority track: verify modules against
-real hardware as it becomes available, and optionally codify the
-manually-applied configuration into playbooks afterward, for repeatability
-on future deployments. Don't block customer-facing work on it, and don't
-read slow progress here as slow progress on the actual delivery.
+To make that possible on a tight deadline without waiting on upstream, we
+forked `tplink-omada-client` privately:
+**github.com/japplewhite/tplink-omada-api-fork**, branch
+`feature/vlan-network-support`. That branch = upstream master + two merged-in
+open upstream PRs (#88 DHCP reservations, #90 AP radio settings) + our own
+`get_networks()`/`LanNetwork` addition for reading LAN networks/VLANs (the
+one capability this project actually needed that didn't exist anywhere
+upstream). `create_network()` is stubbed with `NotImplementedError` — its
+payload is a guess we haven't verified, and it's a mutating call, so it
+stays unimplemented until confirmed against the live OC200 (ideally by
+capturing the Controller UI's own request via browser devtools when
+creating a network by hand once, ironically, purely to reverse-engineer the
+payload — not as the delivery mechanism itself).
 
-**Upstream coordination check-back: 2026-09-03.** If PR #86
-(github.com/MarkGodwin/tplink-omada-api/pull/86) has no reply from titosemi
-or the maintainer by then, treat upstream as unresponsive for this
-project's roadmap — fall back to small local `module_utils` shims for just
-the missing capabilities (VLANs, bulk DHCP) rather than forking the whole
-library (see the "no reply" strategy discussed in-session; full fork stays
-a last resort, not a default).
+The collection's `requirements.txt` now points at that fork+branch instead
+of PyPI. This also pulled in a real upstream API shape change: `master`
+already renamed `SwitchPortOverrides` → `SwitchPortSettings` +
+`PortProfileOverrides` (with proper None-means-unchanged semantics, which
+actually simplified `omada_switch_port`) and requires Python **3.13**, not
+3.11 — installed locally via `uv python install 3.13`.
+
+**Upstream coordination check-back: 2026-09-03**, still tracked, but now
+informational only — it doesn't gate anything, since the fork already
+unblocks development. If PR #86
+(github.com/MarkGodwin/tplink-omada-api/pull/86) gets a reply, the plan is
+to reconcile our fork's changes back into a real upstream contribution using
+that same branch; if not, the fork keeps serving as the dependency
+indefinitely rather than being a blocker either way.
+
+**CI note:** the private fork needs a `FORK_ACCESS_TOKEN` repo secret (a PAT
+with read access to `tplink-omada-api-fork`) for GitHub Actions to install
+it — the default `GITHUB_TOKEN` can't reach a second private repo. Until
+that secret is added, CI will fail on `pip install -r requirements.txt`.
+Local development is unaffected (works via `gh`'s own git credential
+integration).
 
 ## Phases (tracking)
 
@@ -39,7 +60,7 @@ a last resort, not a default).
 - [x] Phase 2 — API capability matrix ([report](docs/phase2-capability-matrix.md))
 - [ ] Phase 3 — Upstream contributions (prepared here, submitted by the user —
       no PRs are opened without explicit review/approval per PR)
-- [ ] Phase 4 — Ansible collection (in progress: `applewhiteit.omada` at `ansible_collections/applewhiteit/omada/` — 5 modules so far: `omada_site_info`, `omada_device_info`, `omada_firmware_info`, `omada_switch_port`, `omada_device`; VLAN/WLAN/guest-network modules blocked on upstream support)
+- [ ] Phase 4 — Ansible collection (in progress: `applewhiteit.omada` at `ansible_collections/applewhiteit/omada/` — 6 modules so far: `omada_site_info`, `omada_device_info`, `omada_firmware_info`, `omada_switch_port`, `omada_device`, `omada_network_info`; now built on our private fork, see "Delivery priority" above)
 - [ ] Phase 5 — Example roles/playbooks
 - [ ] Phase 6 — Validation against the reference deployment (see below)
 - [ ] Phase 7 — Monitoring / capacity-planning use case (1GbE→2.5GbE decision support)

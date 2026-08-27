@@ -25,7 +25,8 @@ try:
     from tplink_omada_client.omadasiteclient import (
         AccessPointPortSettings,
         GatewayPortSettings,
-        SwitchPortOverrides,
+        PortProfileOverrides,
+        SwitchPortSettings,
     )
 
     HAS_OMADA_CLIENT = True
@@ -49,9 +50,10 @@ __all__ = [
     "OmadaClientException",
     "omada_argument_spec",
     "PoEMode",
+    "PortProfileOverrides",
     "run_omada_client_task",
     "run_omada_task",
-    "SwitchPortOverrides",
+    "SwitchPortSettings",
     "to_native_message",
 ]
 

@@ -24,10 +24,25 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
+      # requirements.txt currently pins a private fork
+      # (japplewhite/tplink-omada-api-fork) for unreleased VLAN/network
+      # support - see requirements.txt's own comment for why. That repo is
+      # private, so this step needs a token with read access to it, since
+      # the default GITHUB_TOKEN only covers this repo. Set a repo secret
+      # named FORK_ACCESS_TOKEN (a PAT, or fine-grained token scoped to
+      # read tplink-omada-api-fork) at:
+      # https://github.com/japplewhite/ansible-collection-omada/settings/secrets/actions
+      # Until that secret exists, this step (and the whole workflow) will
+      # fail on the private git+https:// URL - that's expected, not a bug.
       - name: Install tooling
+        env:
+          FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
         run: |
+          if [ -n "$FORK_ACCESS_TOKEN" ]; then
+            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+          fi
           pip install ruff ansible-lint ansible-core
           pip install -r requirements.txt
 
@@ -45,10 +60,16 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
+      # See the lint job's comment above re: FORK_ACCESS_TOKEN.
       - name: Install tooling
+        env:
+          FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
         run: |
+          if [ -n "$FORK_ACCESS_TOKEN" ]; then
+            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+          fi
           pip install ansible-core pytest pytest-mock
           pip install -r requirements.txt
 
