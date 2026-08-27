@@ -33,9 +33,9 @@ specific only to a single deployment.
 ## Reference deployment (for Phase 6/7 validation only)
 
 Used to validate the collection against real hardware/topology — not to be
-treated as the only supported shape. Full source design document lives
-outside this repo (customer-owned, not duplicated here):
-`~/Library/Mobile Documents/com~apple~CloudDocs/REDACTED-customer-design-doc-path`
+treated as the only supported shape. The full source design document is
+customer-confidential and kept outside this repo entirely (not duplicated
+here, and not named here either).
 
 Hardware:
 - Gateway: TP-Link ER707-M2 (Omada multi-gig VPN gateway)
