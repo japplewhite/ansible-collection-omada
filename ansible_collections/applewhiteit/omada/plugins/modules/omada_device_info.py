@@ -128,6 +128,7 @@ devices:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+    enum_display,
     omada_argument_spec,
     run_omada_task,
 )
@@ -141,7 +142,7 @@ def _serialize_device(device):
         "model": device.model,
         "model_display_name": device.model_display_name,
         "status": int(device.status) if device.status is not None else None,
-        "status_category": str(device.status_category) if device.status_category is not None else None,
+        "status_category": enum_display(device.status_category),
         "ip_address": device.ip_address,
         "firmware_version": device.firmware_version,
         "need_upgrade": device.need_upgrade,

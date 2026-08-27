@@ -13,8 +13,10 @@ class FakeNetwork:
     id: str
     name: str
     vlan_id: int | None = None
-    purpose: int | None = None
+    purpose: str | None = None
     gateway_subnet: str | None = None
+    dhcp_enabled: bool | None = None
+    is_primary: bool | None = None
 
 
 class FakeSiteClient:
@@ -52,9 +54,23 @@ def _run(monkeypatch, site_client, args):
 def test_lists_networks(monkeypatch):
     site_client = FakeSiteClient(
         [
-            FakeNetwork(id="net-lan-default", name="Default", vlan_id=None),
             FakeNetwork(
-                id="net-surveillance", name="Surveillance", vlan_id=30, gateway_subnet="192.168.30.1/24",
+                id="net-lan-default",
+                name="Default",
+                vlan_id=1,
+                purpose="interface",
+                gateway_subnet="192.168.0.1/24",
+                dhcp_enabled=True,
+                is_primary=True,
+            ),
+            FakeNetwork(
+                id="net-surveillance",
+                name="Surveillance",
+                vlan_id=30,
+                purpose="interface",
+                gateway_subnet="192.168.30.1/24",
+                dhcp_enabled=True,
+                is_primary=False,
             ),
         ]
     )
@@ -65,15 +81,19 @@ def test_lists_networks(monkeypatch):
         {
             "id": "net-lan-default",
             "name": "Default",
-            "vlan_id": None,
-            "purpose": None,
-            "gateway_subnet": None,
+            "vlan_id": 1,
+            "purpose": "interface",
+            "gateway_subnet": "192.168.0.1/24",
+            "dhcp_enabled": True,
+            "is_primary": True,
         },
         {
             "id": "net-surveillance",
             "name": "Surveillance",
             "vlan_id": 30,
-            "purpose": None,
+            "purpose": "interface",
             "gateway_subnet": "192.168.30.1/24",
+            "dhcp_enabled": True,
+            "is_primary": False,
         },
     ]

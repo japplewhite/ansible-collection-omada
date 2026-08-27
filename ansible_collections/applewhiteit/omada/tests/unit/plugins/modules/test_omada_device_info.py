@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import pytest
 from ansible.module_utils import basic
 from ansible_collections.applewhiteit.omada.plugins.modules import omada_device_info
+from tplink_omada_client.definitions import DeviceStatusCategory
 
 from .utils import AnsibleExitJson, exit_json, set_module_args
 
@@ -16,7 +17,7 @@ class FakeDevice:
     model: str = "SG3452XP"
     model_display_name: str = "TP-Link SG3452XP"
     status: int = 1
-    status_category: str = "connected"
+    status_category: DeviceStatusCategory = DeviceStatusCategory.CONNECTED
     ip_address: str = "10.0.10.5"
     firmware_version: str = "1.0.0"
     need_upgrade: bool = False
@@ -73,6 +74,10 @@ def test_lists_all_devices(monkeypatch):
     assert result["changed"] is False
     assert [d["mac"] for d in result["devices"]] == [SWITCH.mac, AP1.mac, AP2.mac]
     assert result["devices"][0]["model_display_name"] == "TP-Link SG3452XP"
+    # status_category renders as a friendly string, not the raw enum/int
+    # (a real live-controller bug this test would have caught: it briefly
+    # rendered as the literal string "1" instead of "connected")
+    assert result["devices"][0]["status_category"] == "connected"
 
 
 def test_filters_by_device_type(monkeypatch):

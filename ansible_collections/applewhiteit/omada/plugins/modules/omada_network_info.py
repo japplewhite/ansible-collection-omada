@@ -18,10 +18,8 @@ description:
   - >-
     B(This module depends on unreleased upstream code.) It requires our
     private fork's C(feature/vlan-network-support) branch, not any released
-    version of tplink-omada-client. The C(get_networks) endpoint this module
-    calls has not been confirmed against a live controller as of when this
-    module was written - check the collection's README/capability matrix
-    for current status before trusting results.
+    version of tplink-omada-client. Verified 2026-08-27 against a live
+    controller (firmware 6.2.14.12).
 options:
   controller_url:
     description: Base URL of the Omada controller, e.g. C(https://omada.example.com:8043).
@@ -81,11 +79,17 @@ networks:
       description: 802.1Q VLAN ID, if tagged.
       type: int
     purpose:
-      description: Raw controller purpose/type code - not yet mapped to a friendly name.
-      type: int
+      description: Network purpose, e.g. C(interface) for a standard LAN network.
+      type: str
     gateway_subnet:
       description: Gateway IP / subnet for the network, if present.
       type: str
+    dhcp_enabled:
+      description: Whether this network's own DHCP server is enabled.
+      type: bool
+    is_primary:
+      description: Whether this is the site's primary/default network.
+      type: bool
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -102,6 +106,8 @@ def _serialize(network):
         "vlan_id": network.vlan_id,
         "purpose": network.purpose,
         "gateway_subnet": network.gateway_subnet,
+        "dhcp_enabled": network.dhcp_enabled,
+        "is_primary": network.is_primary,
     }
 
 
