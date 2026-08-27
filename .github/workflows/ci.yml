@@ -44,25 +44,6 @@ jobs:
       # https://github.com/japplewhite/ansible-collection-omada/settings/secrets/actions
       # Until that secret exists, this step (and the whole workflow) will
       # fail on the private git+https:// URL - that's expected, not a bug.
-      # TEMPORARY diagnostic - remove once FORK_ACCESS_TOKEN auth is
-      # confirmed working. Checks token validity/repo-access against the
-      # GitHub API directly, without ever printing the token itself.
-      - name: Diagnose FORK_ACCESS_TOKEN
-        env:
-          FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
-        run: |
-          echo "Token length: ${#FORK_ACCESS_TOKEN}"
-          curl -s -o /tmp/whoami.json -w "whoami HTTP status: %{http_code}\n" \
-            -H "Authorization: Bearer ${FORK_ACCESS_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/user
-          cat /tmp/whoami.json
-          curl -s -o /tmp/repo.json -w "repo HTTP status: %{http_code}\n" \
-            -H "Authorization: Bearer ${FORK_ACCESS_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/japplewhite/tplink-omada-api-fork
-          cat /tmp/repo.json
-
       - name: Install tooling
         env:
           FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
