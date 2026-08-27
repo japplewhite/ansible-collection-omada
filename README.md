@@ -15,7 +15,7 @@ Phase 1 (upstream ecosystem research) in progress. See `docs/` as phases land.
 - [x] Phase 2 — API capability matrix ([report](docs/phase2-capability-matrix.md))
 - [ ] Phase 3 — Upstream contributions (prepared here, submitted by the user —
       no PRs are opened without explicit review/approval per PR)
-- [ ] Phase 4 — Ansible collection (core modules)
+- [ ] Phase 4 — Ansible collection (in progress: `applewhiteit.omada` at `ansible_collections/applewhiteit/omada/` — `omada_site_info`, `omada_device_info` done so far, config-writing modules next)
 - [ ] Phase 5 — Example roles/playbooks
 - [ ] Phase 6 — Validation against the reference deployment (see below)
 - [ ] Phase 7 — Monitoring / capacity-planning use case (1GbE→2.5GbE decision support)
