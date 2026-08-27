@@ -20,7 +20,15 @@ jobs:
     name: Lint (ruff, ansible-lint)
     runs-on: ubuntu-latest
     steps:
+      # persist-credentials: false - actions/checkout otherwise persists its
+      # own repo-scoped GITHUB_TOKEN as a *global* git credential for the
+      # whole job (via GIT_CONFIG_* env vars), which collides with the
+      # FORK_ACCESS_TOKEN credential configured below for the private fork -
+      # both match the "https://github.com/" prefix, so git/GitHub see a
+      # conflicting auth header and reject it ("Invalid username or token").
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -41,7 +49,7 @@ jobs:
           FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
         run: |
           if [ -n "$FORK_ACCESS_TOKEN" ]; then
-            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/japplewhite/tplink-omada-api-fork.git".insteadOf "https://github.com/japplewhite/tplink-omada-api-fork.git"
           fi
           pip install ruff ansible-lint ansible-core
           pip install -r requirements.txt
@@ -56,7 +64,15 @@ jobs:
     name: Unit tests (pytest)
     runs-on: ubuntu-latest
     steps:
+      # persist-credentials: false - actions/checkout otherwise persists its
+      # own repo-scoped GITHUB_TOKEN as a *global* git credential for the
+      # whole job (via GIT_CONFIG_* env vars), which collides with the
+      # FORK_ACCESS_TOKEN credential configured below for the private fork -
+      # both match the "https://github.com/" prefix, so git/GitHub see a
+      # conflicting auth header and reject it ("Invalid username or token").
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -68,7 +84,7 @@ jobs:
           FORK_ACCESS_TOKEN: ${{ secrets.FORK_ACCESS_TOKEN }}
         run: |
           if [ -n "$FORK_ACCESS_TOKEN" ]; then
-            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+            git config --global url."https://x-access-token:${FORK_ACCESS_TOKEN}@github.com/japplewhite/tplink-omada-api-fork.git".insteadOf "https://github.com/japplewhite/tplink-omada-api-fork.git"
           fi
           pip install ansible-core pytest pytest-mock
           pip install -r requirements.txt
