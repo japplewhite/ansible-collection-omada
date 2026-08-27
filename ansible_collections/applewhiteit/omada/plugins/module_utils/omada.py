@@ -33,6 +33,28 @@ except ImportError:
     HAS_OMADA_CLIENT = False
     OMADA_CLIENT_IMPORT_ERROR = traceback.format_exc()
 
+# Re-exported for modules (kept here rather than imported directly in each
+# module, per this file's module docstring) - not used below, so silence the
+# unused-import lint for the deliberate re-export.
+__all__ = [
+    "AccessPointPortSettings",
+    "check_omada_client_dependency",
+    "DOT1X_MODE_CHOICES",
+    "DUPLEX_CHOICES",
+    "enum_display",
+    "GatewayPortSettings",
+    "HAS_OMADA_CLIENT",
+    "LED_SETTING_CHOICES",
+    "LINK_SPEED_CHOICES",
+    "OmadaClientException",
+    "omada_argument_spec",
+    "PoEMode",
+    "run_omada_client_task",
+    "run_omada_task",
+    "SwitchPortOverrides",
+    "to_native_message",
+]
+
 
 def omada_argument_spec():
     """Connection arguments shared by every module in this collection."""

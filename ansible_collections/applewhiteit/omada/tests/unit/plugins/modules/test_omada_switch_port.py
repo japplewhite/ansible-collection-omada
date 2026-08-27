@@ -3,9 +3,8 @@ from dataclasses import dataclass, replace
 
 import pytest
 from ansible.module_utils import basic
-from tplink_omada_client.definitions import Eth802Dot1X, LinkDuplex, LinkSpeed, PoEMode
-
 from ansible_collections.applewhiteit.omada.plugins.modules import omada_switch_port
+from tplink_omada_client.definitions import Eth802Dot1X, LinkDuplex, LinkSpeed, PoEMode
 
 from .utils import AnsibleExitJson, exit_json, set_module_args
 

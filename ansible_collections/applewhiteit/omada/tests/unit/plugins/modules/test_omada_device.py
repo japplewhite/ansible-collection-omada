@@ -3,9 +3,8 @@ from dataclasses import dataclass
 
 import pytest
 from ansible.module_utils import basic
-from tplink_omada_client.definitions import LedSetting
-
 from ansible_collections.applewhiteit.omada.plugins.modules import omada_device
+from tplink_omada_client.definitions import LedSetting
 
 from .utils import AnsibleExitJson, AnsibleFailJson, exit_json, fail_json, set_module_args
 

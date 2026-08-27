@@ -77,7 +77,6 @@ sites:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-
 from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
     omada_argument_spec,
     run_omada_client_task,

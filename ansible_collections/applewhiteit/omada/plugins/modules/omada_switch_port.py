@@ -146,7 +146,6 @@ after:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-
 from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
     DOT1X_MODE_CHOICES,
     DUPLEX_CHOICES,
@@ -198,7 +197,7 @@ def _desired_override_value(param_name, raw_value):
         return DUPLEX_CHOICES[raw_value]
     if param_name == "link_speed":
         return LINK_SPEED_CHOICES[raw_value]
-    return raw_value  # lldp_med_enable / loopback_detect / spanning_tree_enable / port_isolation are plain bools
+    return raw_value  # remaining override fields are plain bools, no enum mapping needed
 
 
 def _current_value_for_comparison(param_name, current):

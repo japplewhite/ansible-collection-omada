@@ -95,7 +95,6 @@ after:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-
 from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
     LED_SETTING_CHOICES,
     enum_display,

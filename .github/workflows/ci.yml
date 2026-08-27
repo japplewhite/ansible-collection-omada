@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ansible_collections/applewhiteit/omada/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "ansible_collections/applewhiteit/omada/**"
+      - ".github/workflows/ci.yml"
+
+defaults:
+  run:
+    working-directory: ansible_collections/applewhiteit/omada
+
+jobs:
+  lint:
+    name: Lint (ruff, ansible-lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: |
+          pip install ruff ansible-lint ansible-core
+          pip install -r requirements.txt
+
+      - name: ruff check
+        run: ruff check .
+
+      - name: ansible-lint
+        run: ansible-lint .
+
+  test:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: |
+          pip install ansible-core pytest pytest-mock
+          pip install -r requirements.txt
+
+      - name: pytest
+        run: pytest tests/unit -v

@@ -1,5 +1,4 @@
 import pytest
-
 from ansible_collections.applewhiteit.omada.plugins.module_utils import omada
 
 

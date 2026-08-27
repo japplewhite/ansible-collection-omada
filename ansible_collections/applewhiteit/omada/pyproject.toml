@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/F: pycodestyle+pyflakes core. I: import sorting. B: bugbear (real bugs).
+# Deliberately not enabling flake8-comprehensions (C4): Ansible module
+# argument_specs are conventionally written as dict(...) calls throughout the
+# ecosystem, not {} literals - that's idiom here, not a smell.
+select = ["E", "F", "I", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ansible module convention puts DOCUMENTATION/EXAMPLES/RETURN string
+# constants before the plugin imports - not a real ordering bug.
+"plugins/modules/*.py" = ["E402"]
