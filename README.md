@@ -9,6 +9,30 @@ that works for any Omada deployment, not just one customer's network.
 
 Phase 1 (upstream ecosystem research) in progress. See `docs/` as phases land.
 
+## Delivery priority (important — read before assuming this project gates anything)
+
+The customer network this project validates against has a real, near-term
+delivery deadline. **This automation project is never on that critical
+path.** The network gets configured directly through the Omada Controller's
+own web UI, on whatever timeline the hardware and customer need — including
+anything this collection doesn't cover yet (VLANs/networks, WLANs). The
+Controller UI has no such gap; only the Python library this project depends
+on does.
+
+This collection is a parallel, lower-priority track: verify modules against
+real hardware as it becomes available, and optionally codify the
+manually-applied configuration into playbooks afterward, for repeatability
+on future deployments. Don't block customer-facing work on it, and don't
+read slow progress here as slow progress on the actual delivery.
+
+**Upstream coordination check-back: 2026-09-03.** If PR #86
+(github.com/MarkGodwin/tplink-omada-api/pull/86) has no reply from titosemi
+or the maintainer by then, treat upstream as unresponsive for this
+project's roadmap — fall back to small local `module_utils` shims for just
+the missing capabilities (VLANs, bulk DHCP) rather than forking the whole
+library (see the "no reply" strategy discussed in-session; full fork stays
+a last resort, not a default).
+
 ## Phases (tracking)
 
 - [x] Phase 1 — Upstream research & recommendation ([report](docs/phase1-upstream-research.md))
