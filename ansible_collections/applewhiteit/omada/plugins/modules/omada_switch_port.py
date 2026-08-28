@@ -64,6 +64,17 @@ options:
     description: ID of the network (VLAN) to set as this port's native/untagged network.
     type: str
     required: false
+  tag_ids:
+    description:
+      - IDs of port labels ("tags") to apply to this port. No Ansible module
+        currently creates or lists these IDs; look them up with the
+        underlying C(tplink-omada-client) library's C(get_port_labels())/
+        C(create_port_label()) until one exists.
+      - Replaces the full set of labels on the port - not additive. Pass an
+        empty list to clear all labels.
+    type: list
+    elements: str
+    required: false
   enable_poe:
     description: Enable or disable PoE output on this port.
     type: bool
@@ -128,6 +139,17 @@ EXAMPLES = r"""
     port: 12
     profile_id: "{{ ap_profile_id }}"
 
+- name: Apply a port label
+  applewhiteit.omada.omada_switch_port:
+    controller_url: "https://omada.example.com:8043"
+    username: "{{ omada_username }}"
+    password: "{{ omada_password }}"
+    site: "Default"
+    mac: "AA-BB-CC-00-00-01"
+    port: 16
+    tag_ids:
+      - "{{ foo_label_id }}"
+
 - name: Isolate an unused port (check mode - no changes made)
   applewhiteit.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
@@ -186,6 +208,7 @@ def _serialize(port_details):
         "profile_name": port_details.profile_name,
         "has_profile_override": port_details.has_profile_override,
         "native_network_id": port_details.native_network_id,
+        "tag_ids": port_details.tag_ids,
         "duplex": enum_display(port_details.duplex),
         "link_speed": enum_display(port_details.link_speed),
         "poe_mode": enum_display(port_details.poe_mode),
@@ -227,6 +250,7 @@ def main():
         name=dict(type="str", required=False),
         profile_id=dict(type="str", required=False),
         native_network_id=dict(type="str", required=False),
+        tag_ids=dict(type="list", elements="str", required=False),
         enable_poe=dict(type="bool", required=False),
         dot1x_mode=dict(type="str", required=False, choices=list(DOT1X_MODE_CHOICES)),
         duplex=dict(type="str", required=False, choices=list(DUPLEX_CHOICES)),
@@ -254,6 +278,10 @@ def main():
             desired = module.params[field]
             if desired is not None and desired != current_value:
                 top_level_changes[field] = desired
+
+        tag_ids_desired = module.params["tag_ids"]
+        if tag_ids_desired is not None and sorted(tag_ids_desired) != sorted(current.tag_ids):
+            top_level_changes["tag_ids"] = tag_ids_desired
 
         duplex_desired = module.params["duplex"]
         if duplex_desired is not None and DUPLEX_CHOICES[duplex_desired] != current.duplex:

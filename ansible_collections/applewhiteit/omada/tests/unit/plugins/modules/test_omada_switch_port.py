@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 import pytest
 from ansible.module_utils import basic
@@ -25,6 +25,7 @@ class FakePortDetails:
     loopback_detect_enabled: bool = True
     spanning_tree_enabled: bool = False
     port_isolation_enabled: bool = False
+    tag_ids: list = field(default_factory=list)
 
 
 class FakeSiteClient:
@@ -48,6 +49,8 @@ class FakeSiteClient:
             after.duplex = settings.duplex
         if settings.link_speed is not None:
             after.link_speed = settings.link_speed
+        if settings.tag_ids is not None:
+            after.tag_ids = settings.tag_ids
         overrides = settings.profile_overrides
         if settings.profile_override_enabled and overrides is not None:
             if overrides.enable_poe is not None:
@@ -155,6 +158,40 @@ def test_check_mode_reports_change_without_calling_update(monkeypatch):
 
     assert result["changed"] is True
     assert site_client.update_calls == []
+
+
+def test_tag_ids_change_applies_labels(monkeypatch):
+    current = FakePortDetails(port=16, name="Port16", tag_ids=[])
+    site_client = FakeSiteClient(current)
+
+    result = _run(monkeypatch, site_client, _base_args(port=16, tag_ids=["tag-foo"]))
+
+    assert result["changed"] is True
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.tag_ids == ["tag-foo"]
+    assert result["after"]["tag_ids"] == ["tag-foo"]
+
+
+def test_tag_ids_same_set_different_order_is_not_changed(monkeypatch):
+    current = FakePortDetails(port=16, name="Port16", tag_ids=["tag-foo", "tag-bar"])
+    site_client = FakeSiteClient(current)
+
+    result = _run(monkeypatch, site_client, _base_args(port=16, tag_ids=["tag-bar", "tag-foo"]))
+
+    assert result["changed"] is False
+    assert site_client.update_calls == []
+
+
+def test_empty_tag_ids_clears_labels(monkeypatch):
+    current = FakePortDetails(port=16, name="Port16", tag_ids=["tag-foo"])
+    site_client = FakeSiteClient(current)
+
+    result = _run(monkeypatch, site_client, _base_args(port=16, tag_ids=[]))
+
+    assert result["changed"] is True
+    settings = site_client.update_calls[0]["settings"]
+    assert settings.tag_ids == []
+    assert result["after"]["tag_ids"] == []
 
 
 def test_profile_and_override_change_together(monkeypatch):
