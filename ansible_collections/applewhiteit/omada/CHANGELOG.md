@@ -19,6 +19,17 @@ and README for current scope.
   labels; no longer hand-rolls an overrides merge (the new upstream shape
   does None-means-unchanged natively).
 
+### Security
+
+- **This repository's git history was rewritten on 2026-08-28** to remove a
+  customer-identifying local file path that an early commit had
+  accidentally put in the README (later removed from the file itself, but
+  still present in history until this rewrite). If you cloned this repo
+  before that date, your local history is stale — re-clone rather than
+  pulling. No credentials, keys, or other secrets were involved; a full
+  history scan afterward (and of the `tplink-omada-api-fork` dependency)
+  found nothing else.
+
 ### Added
 
 - `module_utils/omada`: shared connection handling, env-var credential
