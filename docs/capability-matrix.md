@@ -1,18 +1,22 @@
-# Phase 2 — API Capability Matrix
+# Capability Matrix
 
-**Upstream dependency:** `tplink-omada-client` 1.4.4 (resolved via `pip install
-tplink-omada-client` under Python 3.11.15, no version pin — this is the latest
-release compatible with 3.11; the newer 1.5.x line requires Python >=3.13,
-unavailable on this machine). Source: `MarkGodwin/tplink-omada-api`.
+What this collection can and can't do today, mapped directly against the
+underlying `tplink-omada-client` library it's built on (see
+[upstream-research.md](upstream-research.md) for why that library).
 
-**API surface mapped:** the library's **legacy/private controller API**, per
-the Phase 1 decision — not TP-Link's official Omada OpenAPI. Where the
-official OpenAPI's actual endpoint list could not be verified (its docs page
-at `use1-omada-northbound.tplinkcloud.com/doc.html` is a JS-rendered Swagger
-UI that returned no static content to fetch), rows are marked **unclear**
+**Baseline:** `tplink-omada-client` 1.4.4 on PyPI (Python >=3.11). This
+collection currently runs on top of a private fork built on the newer 1.5.x
+line (Python >=3.13) that adds LAN network/VLAN create and port-label
+support — see the [collection README](../ansible_collections/applewhiteit/omada/README.md)
+for why. Rows below reflect the fork where noted.
+
+**API surface mapped:** the library's **legacy/private controller API**, not
+TP-Link's official Omada OpenAPI (its docs page is a JS-rendered Swagger UI
+that doesn't expose static content, so it couldn't be checked directly).
+Where that leaves a real gap in what's known, rows are marked **unclear**
 rather than asserting API availability either way.
 
-Date: 2026-08-26.
+Last verified: 2026-08-28.
 
 ## Methodology
 
@@ -47,9 +51,9 @@ Three evidence sources, in order of reliability:
    > switch over to using eventually. I don't want to add features that
    > aren't present in the new Open API..."
 
-   This is important context for Phase 3: the maintainer is *already*
-   reluctant to add legacy-API-only features, which affects which PRs are
-   likely to be accepted.
+   This also explains why some gaps below are filled by our own fork rather
+   than an upstream PR: the maintainer is already reluctant to add
+   legacy-API-only features.
 
 ## Matrix
 
@@ -61,13 +65,13 @@ Three evidence sources, in order of reliability:
 | Switches | **Fully supported upstream** | `get_switch(es)`, `get_switch_port(s)`, `update_switch_port()`, `get_switch_port_overrides()` | Introspection; `command_switch(es).py`, `command_switch_ports.py` | Whole-switch global settings (e.g. STP mode site-wide) not modeled — per-port config is |
 | Access points | **Partially supported upstream** | `get_access_point(s)`, `get_access_point_port()`, `update_access_point_port()` (LAN port PoE/VLAN via `AccessPointPortSettings`) | Introspection; `command_access_point(s).py` | Radio settings (channel/power/band) **not implemented** — open PR #90 "Add access point radio settings support" (created 2026-07-31, still open) confirms this gap and that it's being actively worked |
 | Clients | **Fully supported upstream** | `get_client()`, `get_connected_clients()`, `get_known_clients()`, `update_client()`, `block_client()`, `unblock_client()`, `reconnect_client()` | Introspection; `command_client(s).py`, `command_known_clients.py`, `command_block_client.py`, `command_unblock_client.py`, `command_reconnect_client.py`, `command_set_client_name.py` | Rich — read, rename, block/unblock, reconnect, fixed-IP, AP lock (`lock_to_aps`) |
-| VLANs / networks | **Fully supported (read + create), on our fork — real REST API, no browser involved.** | `get_networks()` and `create_network()` both verified 2026-08-27 against a live controller. Create goes through the official OpenAPI's `openapi/v1/.../networks/confirm`, not the legacy endpoint `get_networks()` reads from — a real payload shape (`{deviceConfig, lanNetwork}`, keyed by the gateway's `deviceMac`, DHCP range under `dhcpSettings.ipRangePool`) captured via injected fetch/XHR interception in a real browser session, after two HAR-export attempts failed to survive the controller's SPA navigation. | `create_network()` used directly (no UI) to create "Business LAN" (VLAN 20, 192.168.20.1/24) on the live controller — confirmed via `get_networks()` afterward. Mocked unit tests assert the exact payload shape. Delete/network-update are not yet implemented (not needed yet). | This is the capability the whole VLAN automation plan was blocked on — now closed. Remaining related gaps (SSIDs/WLANs, guest network, wireless security) are separate rows below, still unconfirmed. |
+| VLANs / networks | **Fully supported (read + create), on our fork.** | `get_networks()`, `create_network()`, `get_port_labels()`/`create_port_label()`, all verified against a live controller. Create goes through the official OpenAPI (`networks/confirm`), a different endpoint than the legacy one `get_networks()` reads from. Port labels ("tags") are their own OpenAPI resource (`switches/port-tag`) — a legacy endpoint of the same name exists but is unrelated and its IDs are rejected by network/port writes. | Network create and port-label create/apply both confirmed end-to-end against a live controller, including a label attached to a newly-created network via `tag_ids`. Network delete/update are not yet implemented. | Related gaps (SSIDs/WLANs, guest network, wireless security) are separate rows below, still unconfirmed. |
 | DHCP configuration | **Partially supported upstream** | `update_client(mac, OmadaClientSettings(fixed_address=OmadaClientFixedAddress(network_id, ip_address)))` | Introspection (dataclass fields read from source); maintainer confirms on Issue #49: `omada client [mac] --fixed-ip [ip] --network [network_id]` works today | Per-client fixed-IP reservation: full read/write. Bulk-listing all reservations and DHCP *scope* config (pool ranges, lease time): not supported — open PR #88 "feat: add DHCP reservation management" (2026-07-28) targets exactly this gap |
 | SSIDs / WLANs | **Unclear and requiring testing** | none for create/config; `OmadaWirelessClient.ssid` is read-only, incidental to client data | Introspection; no `command_ssid*`/`command_wlan*` CLI file exists | No evidence found either way in the official OpenAPI (docs page unreachable) — do not assume "not exposed" |
 | Wireless security | **Unclear and requiring testing** | none found | Introspection | Same caveat — official docs unreachable |
 | Guest networks | **Unclear and requiring testing** | none for config; `is_guest` is a read-only client flag | Introspection | Same caveat |
 | Switch port profiles | **Partially supported upstream** | `get_port_profile(id)`, `get_port_profiles()`; applied to a port via `update_switch_port(profile_id=...)` | Introspection; `command_switch_ports.py` | Read existing profiles and apply them to ports — no profile create/edit/delete |
-| Individual switch port configuration | **Fully supported upstream** | `get_switch_port(s)`, `update_switch_port()`, `get_switch_port_overrides()`, `SwitchPortOverrides` (PoE, 802.1x, duplex, link speed, LLDP-MED, loopback detect, spanning tree, port isolation) | Introspection; `command_switch_ports.py` | One caveat in the class docstring: "we have to specify overrides for everything... you may need to initialise all of these parameters to avoid overwriting settings" — matters for Phase 4 idempotency design |
+| Individual switch port configuration | **Fully supported upstream** | `get_switch_port(s)`, `update_switch_port()`, `get_switch_port_overrides()`, `SwitchPortOverrides` (PoE, 802.1x, duplex, link speed, LLDP-MED, loopback detect, spanning tree, port isolation) | Introspection; `command_switch_ports.py` | One caveat in the class docstring: "we have to specify overrides for everything... you may need to initialise all of these parameters to avoid overwriting settings" — matters for module idempotency design |
 | PoE state | **Fully supported upstream** | Read: `OmadaSwitchPortStatus.poe_active`/`poe_power`, `OmadaGatewayPortStatus`. Write: `SwitchPortOverrides.enable_poe`, `AccessPointPortSettings.enable_poe`, `GatewayPortSettings.enable_poe` | Introspection; `command_poe.py` | Covers switches, gateway ports, and AP LAN ports |
 | Link state / speed | **Fully supported upstream** | `OmadaSwitchPortStatus`/`OmadaGatewayPortStatus`: `link_speed`, `link_status`, `link_duplex`(gateway); `SwitchPortOverrides.duplex`/`link_speed` for write on switch ports | Introspection | Read on all port types; write (forcing speed/duplex) only modeled for switch ports |
 | Device adoption | **Partially supported upstream** | none for adopt/forget/reject actions; `OmadaDevice.status`/`status_category` (via `DeviceStatus`/`DeviceStatusCategory` enums) give read-only status | Introspection | No adopt/forget/reject write method exists anywhere in `OmadaSiteClient` — status visibility only |
@@ -90,31 +94,19 @@ Three evidence sources, in order of reliability:
 - Client-to-AP locking (`OmadaClientSettings.lock_to_aps`)
 - Controller/software update info — merged via PR #72 and #83
 
-## Open questions (unclear rows, for Phase 6 live-testing or renewed doc access)
+## Known gaps
 
-SSIDs/WLANs, wireless security, guest networks, device naming (device-level,
-not client), AP throughput, channel utilization, event/alert retrieval, and
-configuration backup all need one of: (a) a reachable rendering of TP-Link's
-official OpenAPI docs (the Swagger UI needs JS execution / possibly
-controller-side auth — a browser-based check against the actual OC200 in
-Phase 6 may resolve this directly), or (b) live testing against the reference
-OC200 controller once it's staged.
+SSIDs/WLANs, wireless security, guest networks, device-level naming (not
+client naming, which is supported), AP throughput, channel utilization,
+event/alert retrieval, and configuration backup are all unconfirmed one way
+or the other — neither the legacy client nor a reachable rendering of
+TP-Link's official OpenAPI docs settles it. Treat these as "not available
+today," not "confirmed absent."
 
-## Feeds into
+## What this means for module coverage
 
-- **Phase 3** (upstream PRs) should prioritize the two already-open,
-  already-scoped gaps found here: **PR #90** (AP radio settings) and **PR
-  #88** (DHCP reservation management) — reviewing/contributing to those
-  directly is more valuable than opening competing new PRs. **VLANs/networks**
-  is the next-highest-value gap (no open PR currently targets it, since #86
-  was closed unmerged) but the maintainer's stated OpenAPI hesitancy (Issue
-  #49) means a legacy-API-only VLAN PR may face resistance — worth raising
-  the question in a scoping issue before writing code.
-- **Phase 4** (Ansible module scope) should be bounded to the "Fully
-  supported" and "Partially supported" rows: controller auth, sites,
-  gateways, switches, access points (LAN ports only, not radio), clients,
-  DHCP (per-client reservations only), switch port profiles (read + apply),
-  individual switch port config, PoE, link state, device adoption (status
-  only), firmware status, WAN status, traffic statistics (current counters),
-  AP client counts (via aggregation). "Unclear" rows should not become
-  modules until resolved.
+Ansible modules only exist for "Fully supported" and "Partially supported"
+rows — see the [collection README](../ansible_collections/applewhiteit/omada/README.md)
+for the current module list. "Unclear" rows don't get a module until
+resolved, since shipping one would mean guessing at a payload against
+production network config.

@@ -1,8 +1,10 @@
-# Phase 1 — Upstream Ecosystem Research
+# Upstream Ecosystem Research
 
-Researched August 2026. Compiled by an agent using live web search/fetch against
-GitHub, PyPI, and TP-Link/Home Assistant sources. Anything not directly verified
-against a repo/README/PyPI page is flagged unconfirmed below rather than assumed.
+Last researched August 2026, against GitHub, PyPI, and TP-Link/Home Assistant
+sources. Anything not directly verified against a repo/README/PyPI page is
+flagged unconfirmed below rather than assumed. This explains why the
+collection is built on `tplink-omada-client`, and where that dependency's
+gaps come from.
 
 ## Recommendation
 
@@ -18,7 +20,7 @@ TP-Link's newer official OpenAPI. No Python project combines (a) the official
 OpenAPI and (b) standalone pip-installable packaging — see "The OpenAPI gap"
 below. Recommended mitigation: design the collection's `module_utils` transport
 layer so either backend can be swapped in, and treat an OpenAPI auth/transport
-contribution to `tplink-omada-api` as a Phase 3 candidate.
+contribution to `tplink-omada-api` as a future upstream candidate.
 
 ## Comparison table
 
@@ -53,7 +55,7 @@ self-hosted controller. For a **self-hosted OC200 hardware controller** (our
 reference deployment's controller), the relevant constraint is firmware
 **≥6.2.10.18** with Open API explicitly enabled under Settings → Platform
 Integration — not the cloud-tier restriction. This should be verified against
-the actual OC200 before Phase 2 assumes OpenAPI is reachable.
+the actual OC200 before assuming OpenAPI is reachable.
 
 ## Caveats / unconfirmed items
 
