@@ -103,10 +103,10 @@ pip install -r ansible_collections/applewhiteit/omada/requirements.txt
 
 Validated against a real deployment (not the only supported shape):
 
-- Gateway: TP-Link ER707-M2
-- Core switch: TP-Link SG3452XP (48-port GbE PoE+, 4x 10G SFP+)
+- Gateway: TP-Link ER707-M2 (hardware v1.30, firmware 1.4.5)
+- Core switch: TP-Link SG3452XP (48-port GbE PoE+, 4x 10G SFP+; hardware v2.20, firmware 2.20.27)
 - Controller: TP-Link OC200 (hardware controller, firmware 6.2.14.12)
-- Access points: TP-Link EAP723 (Wi-Fi 7)
+- Access points: TP-Link EAP723 (Wi-Fi 7; hardware v2.0, firmware 1.2.3)
 
 ## Roadmap
 
