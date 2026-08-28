@@ -1,4 +1,4 @@
-# applewhiteit.omada
+# japplewhite0.omada
 
 Ansible collection for automating TP-Link Omada SDN networks (controller,
 gateway, switches, access points), built on
@@ -27,7 +27,7 @@ public, so no special access is needed to install it.
 ## Installation
 
 ```bash
-ansible-galaxy collection install applewhiteit.omada
+ansible-galaxy collection install japplewhite0.omada
 pip install -r requirements.txt
 ```
 
@@ -64,7 +64,7 @@ variable file; do not hard-code credentials.
 
 ```yaml
 - name: Create a VLAN
-  applewhiteit.omada.omada_network:
+  japplewhite0.omada.omada_network:
     name: "Business LAN"
     vlan_id: 20
     gateway_subnet: "192.168.20.1/24"
@@ -73,7 +73,7 @@ variable file; do not hard-code credentials.
   register: business_lan
 
 - name: Assign a switch port to that VLAN
-  applewhiteit.omada.omada_switch_port:
+  japplewhite0.omada.omada_switch_port:
     mac: "AA-BB-CC-00-00-01"
     port: 16
     native_network_id: "{{ business_lan.network.id }}"

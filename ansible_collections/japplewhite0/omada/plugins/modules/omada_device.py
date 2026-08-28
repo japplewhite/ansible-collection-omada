@@ -57,7 +57,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: Turn off a switch's status LED
-  applewhiteit.omada.omada_device:
+  japplewhite0.omada.omada_device:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -66,7 +66,7 @@ EXAMPLES = r"""
     led: "off"
 
 - name: Follow the site-wide LED setting
-  applewhiteit.omada.omada_device:
+  japplewhite0.omada.omada_device:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -95,7 +95,7 @@ after:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     LED_SETTING_CHOICES,
     enum_display,
     omada_argument_spec,

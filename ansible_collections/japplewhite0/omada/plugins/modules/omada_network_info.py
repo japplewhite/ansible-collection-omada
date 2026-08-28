@@ -13,7 +13,7 @@ short_description: List LAN networks (VLANs) defined on an Omada site
 version_added: "1.0.0"
 description:
   - Retrieve the LAN networks/VLANs configured on a site, for use with
-    O(native_network_id) in M(applewhiteit.omada.omada_switch_port).
+    O(native_network_id) in M(japplewhite0.omada.omada_switch_port).
   - Read-only; makes no changes.
   - >-
     B(This module depends on unreleased upstream code.) It requires our
@@ -49,7 +49,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: List networks/VLANs on the site
-  applewhiteit.omada.omada_network_info:
+  japplewhite0.omada.omada_network_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -93,7 +93,7 @@ networks:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     omada_argument_spec,
     run_omada_task,
 )

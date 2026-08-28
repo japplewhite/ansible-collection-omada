@@ -47,7 +47,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: List all sites visible to this account
-  applewhiteit.omada.omada_site_info:
+  japplewhite0.omada.omada_site_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -77,7 +77,7 @@ sites:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     omada_argument_spec,
     run_omada_client_task,
 )

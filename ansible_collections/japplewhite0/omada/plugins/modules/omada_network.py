@@ -92,7 +92,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: Create the Business LAN VLAN
-  applewhiteit.omada.omada_network:
+  japplewhite0.omada.omada_network:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -104,7 +104,7 @@ EXAMPLES = r"""
     dhcp_end: "192.168.20.199"
 
 - name: Create a network with a port label attached
-  applewhiteit.omada.omada_network:
+  japplewhite0.omada.omada_network:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -118,7 +118,7 @@ EXAMPLES = r"""
       - "{{ foo_label_id }}"
 
 - name: Create a network with DHCP disabled (check mode - no changes made)
-  applewhiteit.omada.omada_network:
+  japplewhite0.omada.omada_network:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -160,7 +160,7 @@ network:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     omada_argument_spec,
     run_omada_task,
 )

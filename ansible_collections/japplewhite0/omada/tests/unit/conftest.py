@@ -2,7 +2,7 @@ import os
 import sys
 
 # Running under plain pytest (not `ansible-test units`), so the
-# `ansible_collections.applewhiteit.omada` namespace package used by every
+# `ansible_collections.japplewhite0.omada` namespace package used by every
 # module/module_utils import isn't on sys.path automatically. Add the
 # project's `ansible_collections/` root so those imports resolve.
 # Needs the *parent* of ansible_collections/ on sys.path, not that directory

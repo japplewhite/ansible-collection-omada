@@ -49,7 +49,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: Firmware status for one switch
-  applewhiteit.omada.omada_firmware_info:
+  japplewhite0.omada.omada_firmware_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -58,7 +58,7 @@ EXAMPLES = r"""
   register: fw
 
 - name: Firmware status for every device on the site
-  applewhiteit.omada.omada_firmware_info:
+  japplewhite0.omada.omada_firmware_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -96,7 +96,7 @@ devices:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     omada_argument_spec,
     run_omada_task,
 )

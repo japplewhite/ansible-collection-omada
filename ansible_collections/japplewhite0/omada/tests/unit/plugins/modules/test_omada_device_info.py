@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import pytest
 from ansible.module_utils import basic
-from ansible_collections.applewhiteit.omada.plugins.modules import omada_device_info
+from ansible_collections.japplewhite0.omada.plugins.modules import omada_device_info
 from tplink_omada_client.definitions import DeviceStatusCategory
 
 from .utils import AnsibleExitJson, exit_json, set_module_args

@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import pytest
 from ansible.module_utils import basic
-from ansible_collections.applewhiteit.omada.plugins.modules import omada_site_info
+from ansible_collections.japplewhite0.omada.plugins.modules import omada_site_info
 
 from .utils import AnsibleExitJson, exit_json, set_module_args
 

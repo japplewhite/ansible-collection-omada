@@ -52,7 +52,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: List all devices on the site
-  applewhiteit.omada.omada_device_info:
+  japplewhite0.omada.omada_device_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -60,7 +60,7 @@ EXAMPLES = r"""
   register: device_result
 
 - name: List only switches
-  applewhiteit.omada.omada_device_info:
+  japplewhite0.omada.omada_device_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -69,7 +69,7 @@ EXAMPLES = r"""
   register: switches
 
 - name: Look up one device by MAC
-  applewhiteit.omada.omada_device_info:
+  japplewhite0.omada.omada_device_info:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -127,7 +127,7 @@ devices:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     enum_display,
     omada_argument_spec,
     run_omada_task,

@@ -1,5 +1,5 @@
 import pytest
-from ansible_collections.applewhiteit.omada.plugins.module_utils import omada
+from ansible_collections.japplewhite0.omada.plugins.module_utils import omada
 
 
 class FailJsonCalled(Exception):

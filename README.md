@@ -31,7 +31,7 @@ screen-scraping, just modules that speak the Controller's own API.
 - Credentials never sit in playbooks: every module supports environment
   variables and Ansible Vault.
 
-See the [collection README](ansible_collections/applewhiteit/omada/README.md)
+See the [collection README](ansible_collections/japplewhite0/omada/README.md)
 for the full module list and options, and the
 [capability matrix](docs/capability-matrix.md) for exactly what's covered,
 partially covered, or not yet available.
@@ -63,8 +63,8 @@ See [upstream-research.md](docs/upstream-research.md) for why
 ## Installation
 
 ```bash
-ansible-galaxy collection install applewhiteit.omada
-pip install -r ansible_collections/applewhiteit/omada/requirements.txt
+ansible-galaxy collection install japplewhite0.omada
+pip install -r ansible_collections/japplewhite0/omada/requirements.txt
 ```
 
 ## Quick start
@@ -79,11 +79,11 @@ pip install -r ansible_collections/applewhiteit/omada/requirements.txt
     OMADA_SITE: "Default"
   tasks:
     - name: List devices on the site
-      applewhiteit.omada.omada_device_info:
+      japplewhite0.omada.omada_device_info:
       register: devices
 
     - name: Create a VLAN
-      applewhiteit.omada.omada_network:
+      japplewhite0.omada.omada_network:
         name: "Business LAN"
         vlan_id: 20
         gateway_subnet: "192.168.20.1/24"
@@ -92,7 +92,7 @@ pip install -r ansible_collections/applewhiteit/omada/requirements.txt
       register: business_lan
 
     - name: Assign a switch port to that VLAN
-      applewhiteit.omada.omada_switch_port:
+      japplewhite0.omada.omada_switch_port:
         mac: "AA-BB-CC-00-00-01"
         port: 16
         native_network_id: "{{ business_lan.network.id }}"
@@ -130,7 +130,7 @@ or credentials; no logic specific to a single deployment.
 ## Development
 
 ```bash
-cd ansible_collections/applewhiteit/omada
+cd ansible_collections/japplewhite0/omada
 pip install -r requirements.txt
 pip install ruff ansible-lint ansible-core pytest pytest-mock
 ruff check .

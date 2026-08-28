@@ -7,7 +7,7 @@ underlying `tplink-omada-client` library it's built on (see
 **Baseline:** `tplink-omada-client` 1.4.4 on PyPI (Python >=3.11). This
 collection currently runs on top of our own public fork built on the newer
 1.5.x line (Python >=3.13) that adds LAN network/VLAN create and port-label
-support — see the [collection README](../ansible_collections/applewhiteit/omada/README.md)
+support — see the [collection README](../ansible_collections/japplewhite0/omada/README.md)
 for why. Rows below reflect the fork where noted.
 
 **API surface mapped:** the library's **legacy/private controller API**, not
@@ -106,7 +106,7 @@ today," not "confirmed absent."
 ## What this means for module coverage
 
 Ansible modules only exist for "Fully supported" and "Partially supported"
-rows — see the [collection README](../ansible_collections/applewhiteit/omada/README.md)
+rows — see the [collection README](../ansible_collections/japplewhite0/omada/README.md)
 for the current module list. "Unclear" rows don't get a module until
 resolved, since shipping one would mean guessing at a payload against
 production network config.

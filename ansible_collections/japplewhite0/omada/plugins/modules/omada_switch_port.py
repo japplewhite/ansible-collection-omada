@@ -20,7 +20,7 @@ description:
     underlying tplink-omada-client library's own None-means-unchanged
     semantics for profile overrides, not a hand-rolled merge.
   - Requires the O(native_network_id) module to have been created first
-    (see M(applewhiteit.omada.omada_network_info) to look up network IDs) -
+    (see M(japplewhite0.omada.omada_network_info) to look up network IDs) -
     this module only assigns an existing network to a port, it does not
     create networks.
 options:
@@ -118,7 +118,7 @@ requirements:
 
 EXAMPLES = r"""
 - name: Put a camera port on the surveillance VLAN and enable PoE
-  applewhiteit.omada.omada_switch_port:
+  japplewhite0.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -130,7 +130,7 @@ EXAMPLES = r"""
     enable_poe: true
 
 - name: Apply a port profile
-  applewhiteit.omada.omada_switch_port:
+  japplewhite0.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -140,7 +140,7 @@ EXAMPLES = r"""
     profile_id: "{{ ap_profile_id }}"
 
 - name: Apply a port label
-  applewhiteit.omada.omada_switch_port:
+  japplewhite0.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -151,7 +151,7 @@ EXAMPLES = r"""
       - "{{ foo_label_id }}"
 
 - name: Isolate an unused port (check mode - no changes made)
-  applewhiteit.omada.omada_switch_port:
+  japplewhite0.omada.omada_switch_port:
     controller_url: "https://omada.example.com:8043"
     username: "{{ omada_username }}"
     password: "{{ omada_password }}"
@@ -174,7 +174,7 @@ after:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.applewhiteit.omada.plugins.module_utils.omada import (
+from ansible_collections.japplewhite0.omada.plugins.module_utils.omada import (
     DOT1X_MODE_CHOICES,
     DUPLEX_CHOICES,
     LINK_SPEED_CHOICES,
