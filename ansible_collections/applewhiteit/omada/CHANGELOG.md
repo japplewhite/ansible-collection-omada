@@ -7,13 +7,13 @@ and README for current scope.
 
 ### Changed
 
-- **Dependency switched from PyPI `tplink-omada-client` to a private fork**
-  (`github.com/japplewhite/tplink-omada-api-fork`,
-  `feature/vlan-network-support` branch) to get LAN network/VLAN and
-  port-label support with no upstream release timeline. Pulled in a real
-  upstream API shape change along with it: `SwitchPortOverrides` →
-  `SwitchPortSettings` + `PortProfileOverrides`, and a Python floor bump to
-  3.13. See the main project README's "Why a private fork" section.
+- **Dependency switched from PyPI `tplink-omada-client` to our own fork**
+  (`github.com/japplewhite/tplink-omada-api-fork`, tag `v1.5.9-fork.1`) to
+  get LAN network/VLAN and port-label support with no upstream release
+  timeline. Pulled in a real upstream API shape change along with it:
+  `SwitchPortOverrides` → `SwitchPortSettings` + `PortProfileOverrides`, and
+  a Python floor bump to 3.13. See the main project README's "Why a fork"
+  section.
 - `omada_switch_port`: reworked for the new `SwitchPortSettings` shape;
   gained `native_network_id` for VLAN assignment and `tag_ids` for port
   labels; no longer hand-rolls an overrides merge (the new upstream shape

@@ -42,15 +42,15 @@ partially covered, or not yet available.
 - Ansible-core >= 2.15
 - `tplink-omada-client`, installed per the collection's `requirements.txt`
 
-### Why a private fork
+### Why a fork
 
 VLAN/network creation and port labels aren't in any released version of the
 upstream `tplink-omada-client` library yet, so this collection currently
 depends on our own fork
 ([`japplewhite/tplink-omada-api-fork`](https://github.com/japplewhite/tplink-omada-api-fork),
-branch `feature/vlan-network-support`) rather than the PyPI release. The fork
-tracks upstream `master` plus two open upstream PRs (DHCP reservations, AP
-radio settings) and adds network/port-label read and write support on top,
+pinned to tag `v1.5.9-fork.1`) rather than the PyPI release. The fork tracks
+upstream `master` plus two open upstream PRs (DHCP reservations, AP radio
+settings) and adds network/port-label read and write support on top,
 verified against a live controller. We've also raised the network/VLAN gap
 directly with the upstream maintainer
 ([PR #86](https://github.com/MarkGodwin/tplink-omada-api/pull/86)) with an

@@ -8,28 +8,27 @@ Module scope is intentionally bounded to what the underlying client actually
 supports — see [the capability matrix](../../../docs/capability-matrix.md)
 in this repo for exactly what's covered and what isn't yet.
 
-**Currently depends on a private fork, not the PyPI release** —
+**Currently depends on a fork, not the PyPI release** —
 `requirements.txt` points at
-`github.com/japplewhite/tplink-omada-api-fork` (branch
-`feature/vlan-network-support`), which adds LAN network/VLAN and port-label
-support that no released version of the upstream library has yet. See the
-main project [README](../../../README.md)'s "Why a private fork" section for
-details. This means installing this collection's dependency requires access
-to that repo.
+`github.com/japplewhite/tplink-omada-api-fork` (pinned to tag
+`v1.5.9-fork.1`), which adds LAN network/VLAN and port-label support that no
+released version of the upstream library has yet. See the main project
+[README](../../../README.md)'s "Why a fork" section for details. The fork is
+public, so no special access is needed to install it.
 
 ## Requirements
 
-- Python >= 3.13 (the fork's current branch requires this - a real upstream
-  API shape change, not something we chose)
-- `tplink-omada-client` — installed from the private fork per
-  `requirements.txt`, not PyPI, for now
+- Python >= 3.13 (the fork requires this - a real upstream API shape change,
+  not something we chose)
+- `tplink-omada-client` — installed from the fork per `requirements.txt`,
+  not PyPI, for now
 - Ansible-core >= 2.15
 
 ## Installation
 
 ```bash
 ansible-galaxy collection install applewhiteit.omada
-pip install -r requirements.txt  # needs read access to the private fork above
+pip install -r requirements.txt
 ```
 
 ## Credentials

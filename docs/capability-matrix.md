@@ -5,8 +5,8 @@ underlying `tplink-omada-client` library it's built on (see
 [upstream-research.md](upstream-research.md) for why that library).
 
 **Baseline:** `tplink-omada-client` 1.4.4 on PyPI (Python >=3.11). This
-collection currently runs on top of a private fork built on the newer 1.5.x
-line (Python >=3.13) that adds LAN network/VLAN create and port-label
+collection currently runs on top of our own public fork built on the newer
+1.5.x line (Python >=3.13) that adds LAN network/VLAN create and port-label
 support — see the [collection README](../ansible_collections/applewhiteit/omada/README.md)
 for why. Rows below reflect the fork where noted.
 
